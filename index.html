@@ -1,0 +1,850 @@
+<!-- === [PART 1 ここから] ファイル名は index.html として保存 === -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>経穴臨床手帳｜全393穴 検索・暗記データベース</title>
+<style>
+/* --- [ブロック名：デザイン変数・基本設定CSS] ここから --- */
+:root {
+  --bg-base: #f6f4ef;
+  --bg-surface: #ffffff;
+  --bg-subtle: #ece8df;
+  --text-main: #22201e;
+  --text-muted: #66615a;
+  --border-color: #dcd6ca;
+  --accent-primary: #2c4c3b;
+  --accent-primary-light: #e7efe9;
+  --accent-vermilion: #b83b2a;
+  --accent-vermilion-light: #faecea;
+  --sheet-mask: #c93b2b;
+  --sheet-mask-hover: #a82e20;
+  --shadow-sm: 0 1px 3px rgba(34, 32, 30, 0.06);
+  --shadow-md: 0 4px 12px rgba(34, 32, 30, 0.08);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+/* --- [ブロック名：デザイン変数・基本設定CSS] ここまで --- */
+
+/* --- [ブロック名：ヘッダー・レイアウトCSS] ここから --- */
+.app-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.brand-area {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-primary);
+}
+
+.brand-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.red-sheet-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--accent-vermilion);
+  background-color: var(--bg-surface);
+  color: var(--accent-vermilion);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.red-sheet-toggle.is-active {
+  background-color: var(--accent-vermilion);
+  color: #ffffff;
+}
+
+.app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .app-container {
+    grid-template-columns: 300px 1fr;
+    align-items: start;
+    padding: 24px;
+  }
+  .control-panel {
+    position: sticky;
+    top: 74px;
+  }
+}
+/* --- [ブロック名：ヘッダー・レイアウトCSS] ここまで --- */
+
+/* --- [ブロック名：検索・絞り込みパネルCSS] ここから --- */
+.control-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  display: none;
+}
+
+.select-box {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-chip.is-selected {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.reset-all-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset-all-btn:hover {
+  background-color: #e2ddd2;
+}
+/* --- [ブロック名：検索・絞り込みパネルCSS] ここまで --- */
+
+/* --- [ブロック名：経穴カード・赤シートCSS] ここから --- */
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.result-count strong {
+  color: var(--accent-primary);
+  font-size: 1.05rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 1120px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.acupoint-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px solid var(--bg-subtle);
+  padding-bottom: 8px;
+}
+
+.point-name-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.point-reading {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.point-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.meridian-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-primary-light);
+  color: var(--accent-primary);
+  white-space: nowrap;
+}
+
+.youketsu-tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: var(--accent-vermilion-light);
+  color: var(--accent-vermilion);
+  border: 1px solid rgba(184, 59, 42, 0.25);
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.detail-text {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  padding: 6px 8px;
+  background-color: var(--bg-base);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+body.red-sheet-on .maskable {
+  background-color: var(--sheet-mask);
+  color: transparent;
+  user-select: none;
+  cursor: pointer;
+  position: relative;
+}
+
+body.red-sheet-on .maskable::after {
+  content: "タップして確認";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+body.red-sheet-on .maskable.is-revealed {
+  background-color: var(--accent-vermilion-light);
+  color: var(--text-main);
+  user-select: text;
+}
+
+body.red-sheet-on .maskable.is-revealed::after {
+  display: none;
+}
+/* --- [ブロック名：経穴カード・赤シートCSS] ここまで --- */
+
+/* --- [ブロック名：1枚ずつ表示タブ・単体カードCSS] ここから --- */
+/* --- [ブロック名：1枚ずつ表示タブ・単体カードCSS] ここから --- */
+.view-tabs {
+  display: inline-flex;
+  background-color: var(--bg-subtle);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  gap: 2px;
+}
+
+.view-tab-btn {
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.view-tab-btn.is-active {
+  background-color: var(--bg-surface);
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.cards-grid.is-single-view {
+  grid-template-columns: 1fr;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.cards-grid.is-single-view .acupoint-card {
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  height: 430px;
+  overflow-y: auto;
+  justify-content: flex-start;
+}
+
+@media (max-width: 600px) {
+  .cards-grid.is-single-view .acupoint-card {
+    height: 390px;
+    padding: 16px;
+  }
+}
+
+.single-nav-bar {
+  max-width: 680px;
+  margin: 14px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.single-nav-btn {
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.single-nav-btn:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+}
+
+.single-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.single-page-info {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+}
+/* --- [ブロック名：1枚ずつ表示タブ・単体カードCSS] ここまで --- */
+/* --- [ブロック名：1枚ずつ表示タブ・単体カードCSS] ここまで --- */    
+
+/* === [新規機能追加エリア：CSS] 新しいスタイルはこの真上に貼り付け === */
+</style>
+</head>
+<!-- === [PART 1 ここまで] この真下に PART 2 を貼り付け === -->
+<!-- === [PART 2 ここから] PART 1 の真下に貼り付け === -->
+<body>
+<!-- --- [ブロック名：ヘッダー部分HTML] ここから --- -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand-area">
+      <h1 class="brand-title">経穴臨床手帳</h1>
+      <span class="brand-sub">全393穴 検索・暗記データベース</span>
+    </div>
+    <button type="button" id="redSheetToggle" class="red-sheet-toggle" aria-pressed="false">
+      赤シート暗記モード：OFF
+    </button>
+  </div>
+</header>
+<!-- --- [ブロック名：ヘッダー部分HTML] ここまで --- -->
+
+<main class="app-container">
+  <!-- --- [ブロック名：検索・絞り込みパネルHTML] ここから --- -->
+  <aside class="control-panel">
+    <div class="filter-group">
+      <label for="keywordInput">フリーワード検索（穴名・読み・部位・筋肉・神経など）</label>
+      <div class="search-input-wrap">
+        <input type="text" id="keywordInput" class="search-input" placeholder="例：合谷、前脛骨筋、第4肋間...">
+        <button type="button" id="clearSearchBtn" class="clear-search-btn" aria-label="検索文字をクリア">×</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="meridianSelect">所属経絡で絞り込み</label>
+      <select id="meridianSelect" class="select-box">
+        <option value="">すべての経絡・奇穴（全393穴）</option>
+        <optgroup label="奇経（正中線）">
+          <option value="督脈">督脈（28穴）</option>
+          <option value="任脈">任脈（24穴）</option>
+        </optgroup>
+        <optgroup label="手の三陰三陽">
+          <option value="手の太陰肺経">手の太陰肺経（11穴）</option>
+          <option value="手の陽明大腸経">手の陽明大腸経（20穴）</option>
+          <option value="手の少陰心経">手の少陰心経（9穴）</option>
+          <option value="手の太陽小腸経">手の太陽小腸経（19穴）</option>
+          <option value="手の厥陰心包経">手の厥陰心包経（9穴）</option>
+          <option value="手の少陽三焦経">手の少陽三焦経（23穴）</option>
+        </optgroup>
+        <optgroup label="足の三陰三陽">
+          <option value="足の陽明胃経">足の陽明胃経（45穴）</option>
+          <option value="足の太陰脾経">足の太陰脾経（21穴）</option>
+          <option value="足の太陽膀胱経">足の太陽膀胱経（67穴）</option>
+          <option value="足の少陰腎経">足の少陰腎経（27穴）</option>
+          <option value="足の少陽胆経">足の少陽胆経（44穴）</option>
+          <option value="足の厥陰肝経">足の厥陰肝経（14穴）</option>
+        </optgroup>
+        <optgroup label="奇穴（部位別）">
+          <option value="奇穴（頭頸部）">奇穴（頭頸部）（8穴）</option>
+          <option value="奇穴（胸腹部）">奇穴（胸腹部）（1穴）</option>
+          <option value="奇穴（背部）">奇穴（背部）（10穴）</option>
+          <option value="奇穴（上肢部）">奇穴（上肢部）（6穴）</option>
+          <option value="奇穴（下肢部）">奇穴（下肢部）（7穴）</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>要穴カテゴリーで絞り込み（複数選択可）</label>
+      <div id="youketsuChips" class="chip-grid">
+        <button type="button" class="filter-chip" data-tag="原穴">原穴</button>
+        <button type="button" class="filter-chip" data-tag="絡穴">絡穴</button>
+        <button type="button" class="filter-chip" data-tag="郄穴">郄穴</button>
+        <button type="button" class="filter-chip" data-tag="募穴">募穴</button>
+        <button type="button" class="filter-chip" data-tag="背部兪穴">背部兪穴</button>
+        <button type="button" class="filter-chip" data-tag="井">井穴</button>
+        <button type="button" class="filter-chip" data-tag="榮">榮穴</button>
+        <button type="button" class="filter-chip" data-tag="兪">兪穴</button>
+        <button type="button" class="filter-chip" data-tag="経">経穴</button>
+        <button type="button" class="filter-chip" data-tag="合">合穴</button>
+        <button type="button" class="filter-chip" data-tag="八会穴">八会穴</button>
+        <button type="button" class="filter-chip" data-tag="八脈交会穴">八脈交会穴</button>
+        <button type="button" class="filter-chip" data-tag="下合穴">下合穴</button>
+        <button type="button" class="filter-chip" data-tag="四総穴">四総穴</button>
+      </div>
+    </div>
+
+    <button type="button" id="resetAllBtn" class="reset-all-btn">条件をすべてリセット</button>
+  </aside>
+  <!-- --- [ブロック名：検索・絞り込みパネルHTML] ここまで --- -->
+
+<!-- --- [ブロック名：検索結果表示エリアHTML] ここから --- -->
+  <section class="result-area">
+    <div class="result-header">
+      <div class="result-count">該当：<strong id="resultCount">0</strong> 件 / 全393穴</div>
+      <div class="view-tabs" role="tablist" aria-label="表示形式の切り替え">
+        <button type="button" id="tabSingleView" class="view-tab-btn is-active" role="tab" aria-selected="true">1枚ずつ表示</button>
+        <button type="button" id="tabListView" class="view-tab-btn" role="tab" aria-selected="false">一覧表示</button>
+      </div>
+    </div>
+    <div id="cardsGrid" class="cards-grid is-single-view"></div>
+    <div id="singleNavBar" class="single-nav-bar" style="display: flex;">
+      <button type="button" id="prevCardBtn" class="single-nav-btn">← 前の経穴</button>
+      <div class="single-page-info">
+        <span id="singlePageText">1 / 1 枚目</span>
+        <button type="button" id="shuffleCardBtn" class="single-nav-btn" style="margin-left: 8px; padding: 5px 10px; font-size: 0.78rem;">シャッフル</button>
+      </div>
+      <button type="button" id="nextCardBtn" class="single-nav-btn">次の経穴 →</button>
+    </div>
+  </section>
+  <!-- --- [ブロック名：検索結果表示エリアHTML] ここまで --- -->
+
+  <!-- === [新規機能追加エリア：HTML] 新しい要素はこの真上に貼り付け === -->
+</main>
+
+<!-- --- [ブロック名：外部データ読み込みHTML] ここから --- -->
+<script src="acupoints_data.js"></script>
+<!-- --- [ブロック名：外部データ読み込みHTML] ここまで --- -->
+<!-- === [PART 2 ここまで] この真下に PART 3 を貼り付け === -->
+<!-- === [PART 3 ここから] PART 2 の真下に貼り付け === -->
+<script>
+// --- [ブロック名：状態管理・DOM要素取得JS] ここから ---
+const state = {
+  keyword: '',
+  meridian: '',
+  selectedTags: new Set(),
+  redSheetActive: false,
+  viewMode: 'single',
+  filteredList: [],
+  currentIndex: 0
+};
+
+const keywordInput = document.getElementById('keywordInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+const meridianSelect = document.getElementById('meridianSelect');
+const youketsuChips = document.getElementById('youketsuChips');
+const resetAllBtn = document.getElementById('resetAllBtn');
+const redSheetToggle = document.getElementById('redSheetToggle');
+const resultCount = document.getElementById('resultCount');
+const cardsGrid = document.getElementById('cardsGrid');
+const tabListView = document.getElementById('tabListView');
+const tabSingleView = document.getElementById('tabSingleView');
+const singleNavBar = document.getElementById('singleNavBar');
+const prevCardBtn = document.getElementById('prevCardBtn');
+const nextCardBtn = document.getElementById('nextCardBtn');
+const shuffleCardBtn = document.getElementById('shuffleCardBtn');
+const singlePageText = document.getElementById('singlePageText');
+// --- [ブロック名：状態管理・DOM要素取得JS] ここまで ---
+
+// --- [ブロック名：検索フィルタリング処理JS] ここから ---
+function normalizeText(str) {
+  return String(str || '').toLowerCase().replace(/\s+/g, '');
+}
+
+function matchesYouketsu(youketsuText, selectedSet) {
+  if (selectedSet.size === 0) return true;
+  if (!youketsuText) return false;
+  for (const tag of selectedSet) {
+    if (tag === '井' || tag === '榮' || tag === '兪' || tag === '経' || tag === '合') {
+      if (youketsuText.includes(tag + '木穴') ||
+          youketsuText.includes(tag + '火穴') ||
+          youketsuText.includes(tag + '土穴') ||
+          youketsuText.includes(tag + '金穴') ||
+          youketsuText.includes(tag + '水穴')) {
+        return true;
+      }
+    } else if (youketsuText.includes(tag)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function filterAcupoints() {
+  if (typeof ACUPOINT_DATA === 'undefined' || !Array.isArray(ACUPOINT_DATA)) {
+    cardsGrid.innerHTML = '<p>データファイル（acupoints_data.js）が読み込まれていません。index.html と同じフォルダに配置してください。</p>';
+    return;
+  }
+
+  const kw = normalizeText(state.keyword);
+  state.filteredList = ACUPOINT_DATA.filter(item => {
+    if (state.meridian && item.m !== state.meridian) return false;
+    if (!matchesYouketsu(item.y, state.selectedTags)) return false;
+    if (kw) {
+      const target = normalizeText(item.n + item.r + item.m + item.y + item.p + item.t + item.a);
+      if (!target.includes(kw)) return false;
+    }
+    return true;
+  });
+
+  state.currentIndex = 0;
+  renderCards();
+}
+// --- [ブロック名：検索フィルタリング処理JS] ここまで ---
+
+// --- [ブロック名：カード描画・赤シート・単体表示制御JS] ここから ---
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function createCardHtml(item) {
+  const isKiketsu = item.m.startsWith('奇穴');
+  const anatomyLabel = isKiketsu ? '主治' : '解剖（筋・神経・血管）';
+  const youketsuHtml = item.y
+    ? '<div><span class="youketsu-tag">' + escapeHtml(item.y) + '</span></div>'
+    : '';
+
+  return [
+    '<article class="acupoint-card">',
+    '  <div class="card-top">',
+    '    <div class="point-name-wrap">',
+    '      <span class="point-reading">' + escapeHtml(item.r) + '</span>',
+    '      <h2 class="point-name">' + escapeHtml(item.n) + '</h2>',
+    '    </div>',
+    '    <span class="meridian-badge">' + escapeHtml(item.m) + '</span>',
+    '  </div>',
+    youketsuHtml,
+    '  <div class="detail-row">',
+    '    <span class="detail-label">部位</span>',
+    '    <div class="detail-text maskable">' + escapeHtml(item.p) + '</div>',
+    '  </div>',
+    '  <div class="detail-row">',
+    '    <span class="detail-label">取り方</span>',
+    '    <div class="detail-text maskable">' + escapeHtml(item.t) + '</div>',
+    '  </div>',
+    '  <div class="detail-row">',
+    '    <span class="detail-label">' + anatomyLabel + '</span>',
+    '    <div class="detail-text maskable">' + escapeHtml(item.a) + '</div>',
+    '  </div>',
+    '</article>'
+  ].join('');
+}
+
+function renderCards() {
+  const list = state.filteredList;
+  resultCount.textContent = list.length;
+
+  if (list.length === 0) {
+    cardsGrid.classList.remove('is-single-view');
+    singleNavBar.style.display = 'none';
+    cardsGrid.innerHTML = '<div class="acupoint-card"><p>条件に一致する経穴が見つかりませんでした。検索ワードや絞り込み条件を変更してください。</p></div>';
+    return;
+  }
+
+  if (state.viewMode === 'single') {
+    cardsGrid.classList.add('is-single-view');
+    singleNavBar.style.display = 'flex';
+    const currentItem = list.at(state.currentIndex);
+    cardsGrid.innerHTML = createCardHtml(currentItem);
+    singlePageText.textContent = (state.currentIndex + 1) + ' / ' + list.length + ' 枚目';
+    prevCardBtn.disabled = state.currentIndex <= 0;
+    nextCardBtn.disabled = state.currentIndex >= list.length - 1;
+  } else {
+    cardsGrid.classList.remove('is-single-view');
+    singleNavBar.style.display = 'none';
+    cardsGrid.innerHTML = list.map(createCardHtml).join('');
+  }
+}
+
+function switchViewMode(mode) {
+  state.viewMode = mode;
+  const isSingle = mode === 'single';
+  tabListView.classList.toggle('is-active', !isSingle);
+  tabListView.setAttribute('aria-selected', String(!isSingle));
+  tabSingleView.classList.toggle('is-active', isSingle);
+  tabSingleView.setAttribute('aria-selected', String(isSingle));
+  renderCards();
+}
+
+function shuffleFilteredList() {
+  if (state.filteredList.length <= 1) return;
+  const arr = Array.from(state.filteredList);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = arr.at(i);
+    arr[i] = arr.at(j);
+    arr[j] = temp;
+  }
+  state.filteredList = arr;
+  state.currentIndex = 0;
+  renderCards();
+}
+
+function toggleRedSheetMode() {
+  state.redSheetActive = !state.redSheetActive;
+  document.body.classList.toggle('red-sheet-on', state.redSheetActive);
+  redSheetToggle.classList.toggle('is-active', state.redSheetActive);
+  redSheetToggle.setAttribute('aria-pressed', String(state.redSheetActive));
+  redSheetToggle.textContent = state.redSheetActive
+    ? '赤シート暗記モード：ON（タップで個別に開く）'
+    : '赤シート暗記モード：OFF';
+
+  const revealedItems = document.querySelectorAll('.maskable.is-revealed');
+  revealedItems.forEach(el => el.classList.remove('is-revealed'));
+}
+// --- [ブロック名：カード描画・赤シート・単体表示制御JS] ここまで ---
+
+// --- [ブロック名：イベントリスナー初期化JS] ここから ---
+keywordInput.addEventListener('input', e => {
+  state.keyword = e.target.value;
+  clearSearchBtn.style.display = state.keyword ? 'block' : 'none';
+  filterAcupoints();
+});
+
+clearSearchBtn.addEventListener('click', () => {
+  keywordInput.value = '';
+  state.keyword = '';
+  clearSearchBtn.style.display = 'none';
+  keywordInput.focus();
+  filterAcupoints();
+});
+
+meridianSelect.addEventListener('change', e => {
+  state.meridian = e.target.value;
+  filterAcupoints();
+});
+
+youketsuChips.addEventListener('click', e => {
+  const btn = e.target.closest('.filter-chip');
+  if (!btn) return;
+  const tag = btn.dataset.tag;
+  if (state.selectedTags.has(tag)) {
+    state.selectedTags.delete(tag);
+    btn.classList.remove('is-selected');
+  } else {
+    state.selectedTags.add(tag);
+    btn.classList.add('is-selected');
+  }
+  filterAcupoints();
+});
+
+resetAllBtn.addEventListener('click', () => {
+  keywordInput.value = '';
+  state.keyword = '';
+  clearSearchBtn.style.display = 'none';
+  meridianSelect.value = '';
+  state.meridian = '';
+  state.selectedTags.clear();
+  document.querySelectorAll('.filter-chip.is-selected').forEach(el => el.classList.remove('is-selected'));
+  filterAcupoints();
+});
+
+tabListView.addEventListener('click', () => switchViewMode('list'));
+tabSingleView.addEventListener('click', () => switchViewMode('single'));
+
+prevCardBtn.addEventListener('click', () => {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    renderCards();
+  }
+});
+
+nextCardBtn.addEventListener('click', () => {
+  if (state.currentIndex < state.filteredList.length - 1) {
+    state.currentIndex++;
+    renderCards();
+  }
+});
+
+shuffleCardBtn.addEventListener('click', shuffleFilteredList);
+
+document.addEventListener('keydown', e => {
+  if (state.viewMode !== 'single') return;
+  if (document.activeElement === keywordInput) return;
+  if (e.key === 'ArrowLeft' && state.currentIndex > 0) {
+    state.currentIndex--;
+    renderCards();
+  } else if (e.key === 'ArrowRight' && state.currentIndex < state.filteredList.length - 1) {
+    state.currentIndex++;
+    renderCards();
+  }
+});
+
+redSheetToggle.addEventListener('click', toggleRedSheetMode);
+
+cardsGrid.addEventListener('click', e => {
+  if (!state.redSheetActive) return;
+  const target = e.target.closest('.maskable');
+  if (target) {
+    target.classList.toggle('is-revealed');
+  }
+});
+
+// === [新規機能追加エリア：JS] 新しいスクリプトはこの真上に貼り付け ===
+
+document.addEventListener('DOMContentLoaded', filterAcupoints);
+</script>
+</body>
+</html>
+<!-- === [PART 3 ここまで] 完成 === -->
