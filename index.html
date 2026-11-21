@@ -7,6 +7,7 @@
 <title>経穴臨床手帳｜全393穴 検索・暗記データベース</title>
 <style>
 /* --- [ブロック名：デザイン変数・基本設定CSS] ここから --- */
+<title>経穴臨床手帳｜全393穴 検索・暗記データベース</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;700;800&display=swap" rel="stylesheet">
@@ -1216,6 +1217,34 @@ cardsGrid.addEventListener('click', e => {
     target.classList.toggle('is-revealed');
   }
 });
+// --- [ブロック名：UIギミック・件数カウントアップ演出JS] ここから ---
+function animateResultCount(targetValue) {
+  const startValue = parseInt(resultCount.textContent, 10) || 0;
+  if (startValue === targetValue) return;
+  const duration = 260;
+  const startTime = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    resultCount.textContent = Math.round(startValue + (targetValue - startValue) * eased);
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+const originalRenderCards = renderCards;
+renderCards = function() {
+  originalRenderCards();
+  animateResultCount(state.filteredList.length);
+  const activeCard = cardsGrid.querySelector('.acupoint-card');
+  if (activeCard && state.viewMode === 'single') {
+    activeCard.scrollTop = 0;
+  }
+};
+// --- [ブロック名：UIギミック・件数カウントアップ演出JS] ここまで ---
 
 // === [新規機能追加エリア：JS] 新しいスクリプトはこの真上に貼り付け ===
 
