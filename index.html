@@ -625,20 +625,42 @@ body.red-sheet-on .maskable.is-revealed::after {
 }
 /* --- [ブロック名：1枚ずつ表示タブ・単体カードCSS] ここまで --- */
 
+/* --- [ブロック名：アプリロゴマークCSS] ここから --- */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-logo-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(44, 76, 59, 0.2);
+}
+
+.brand-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+/* --- [ブロック名：アプリロゴマークCSS] ここまで --- */
+    
 /* === [新規機能追加エリア：CSS] 新しいスタイルはこの真上に貼り付け === */
 </style>
 </head>
 <!-- === [PART 1 ここまで] この真下に PART 2 を貼り付け === -->
 <!-- === [PART 2 ここから] PART 1 の真下に貼り付け === -->
 <body>
+    
 <!-- --- [ブロック名：ヘッダー部分HTML] ここから --- -->
 <header class="app-header">
   <div class="header-inner">
-    <div class="brand-area">
-      <div class="brand-logo-wrap" aria-hidden="true">
-        <img src="assets/logo.png" alt="" class="brand-logo-img" onerror="this.style.display='none'">
-      </div>
-      <div class="brand-text-wrap">
+    <div class="brand-area" style="display: flex; align-items: center; gap: 10px;">
+      <img src="assets/logo.png" alt="経穴臨床手帳ロゴ" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px; flex-shrink: 0;" onerror="this.style.display='none'">
+      <div>
         <h1 class="brand-title">経穴臨床手帳</h1>
         <span class="brand-sub">全393穴 検索・暗記データベース</span>
       </div>
