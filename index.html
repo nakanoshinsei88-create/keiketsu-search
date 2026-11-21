@@ -654,6 +654,110 @@ body.red-sheet-on .maskable.is-revealed::after {
   line-height: 1.25;
 }
 /* --- [ブロック名：アプリロゴマークCSS] ここまで --- */
+
+/* --- [ブロック名：スワイプ・進捗バー・リップル＆トーストCSS] ここから --- */
+.progress-track {
+  width: 100%;
+  max-width: 700px;
+  height: 4px;
+  background-color: var(--bg-subtle);
+  border-radius: 999px;
+  margin: 0 auto 12px;
+  overflow: hidden;
+  border: 1px solid rgba(214, 206, 190, 0.6);
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-gold) 70%, var(--accent-vermilion) 100%);
+  border-radius: 999px;
+  transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cards-grid.is-single-view {
+  touch-action: pan-y;
+}
+
+.cards-grid.is-single-view .acupoint-card.is-swiping {
+  transition: none;
+  cursor: grabbing;
+}
+
+.filter-chip,
+.reset-all-btn,
+.single-nav-btn,
+.red-sheet-toggle,
+.view-tab-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background-color: rgba(31, 66, 50, 0.22);
+  animation: rippleEffect 0.55s ease-out forwards;
+  pointer-events: none;
+}
+
+.filter-chip.is-selected .ripple-wave,
+.red-sheet-toggle.is-active .ripple-wave,
+.view-tab-btn.is-active .ripple-wave {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes rippleEffect {
+  to {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.undo-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(90px);
+  background-color: #1f1d1a;
+  color: #fffdf9;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-gold);
+  box-shadow: 0 10px 28px rgba(31, 29, 26, 0.28);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.84rem;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.undo-toast.is-visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.undo-toast-btn {
+  background-color: var(--accent-vermilion);
+  color: #ffffff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.undo-toast-btn:hover {
+  background-color: #9e271a;
+}
+/* --- [ブロック名：スワイプ・進捗バー・リップル＆トーストCSS] ここまで --- */
     
 /* === [新規機能追加エリア：CSS] 新しいスタイルはこの真上に貼り付け === */
 </style>
@@ -759,6 +863,12 @@ body.red-sheet-on .maskable.is-revealed::after {
         <button type="button" id="tabListView" class="view-tab-btn" role="tab" aria-selected="false">一覧表示</button>
       </div>
     </div>
+　<!-- --- [ブロック名：学習進捗プログレスバーHTML] ここから --- -->
+    <div id="progressTrack" class="progress-track" aria-hidden="true">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
+　<!-- --- [ブロック名：学習進捗プログレスバーHTML] ここまで --- -->
+      
     <div id="cardsGrid" class="cards-grid is-single-view"></div>
     <div id="singleNavBar" class="single-nav-bar" style="display: flex;">
       <button type="button" id="prevCardBtn" class="single-nav-btn">← 前の経穴</button>
@@ -770,6 +880,13 @@ body.red-sheet-on .maskable.is-revealed::after {
     </div>
   </section>
   <!-- --- [ブロック名：検索結果表示エリアHTML] ここまで --- -->
+
+　<!-- --- [ブロック名：元に戻すトースト通知HTML] ここから --- -->
+  <div id="undoToast" class="undo-toast" role="status" aria-live="polite">
+    <span>検索・絞り込み条件をリセットしました</span>
+    <button type="button" id="undoResetBtn" class="undo-toast-btn">元に戻す</button>
+  </div>
+  <!-- --- [ブロック名：元に戻すトースト通知HTML] ここまで --- -->
 
   <!-- === [新規機能追加エリア：HTML] 新しい要素はこの真上に貼り付け === -->
 </main>
@@ -1074,6 +1191,154 @@ renderCards = function() {
 };
 // --- [ブロック名：UIギミック・件数カウントアップ演出JS] ここまで ---
 
+// --- [ブロック名：スワイプ・進捗バー・リップル＆Undo処理JS] ここから ---
+const progressTrack = document.getElementById('progressTrack');
+const progressFill = document.getElementById('progressFill');
+const undoToast = document.getElementById('undoToast');
+const undoResetBtn = document.getElementById('undoResetBtn');
+
+function updateProgressBar() {
+  if (!progressTrack || !progressFill) return;
+  const total = state.filteredList.length;
+  if (state.viewMode !== 'single' || total === 0) {
+    progressTrack.style.display = 'none';
+    return;
+  }
+  progressTrack.style.display = 'block';
+  const percent = ((state.currentIndex + 1) / total) * 100;
+  progressFill.style.width = percent + '%';
+}
+
+const renderWithProgress = renderCards;
+renderCards = function() {
+  renderWithProgress();
+  updateProgressBar();
+};
+
+// 1. スマホ・タブレット指スワイプカードめくり
+let touchStartX = 0;
+let touchStartY = 0;
+let touchCurrentX = 0;
+let isSwipingCard = false;
+
+cardsGrid.addEventListener('touchstart', e => {
+  if (state.viewMode !== 'single' || state.filteredList.length <= 1) return;
+  const touch = e.touches.item(0);
+  if (!touch) return;
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+  touchCurrentX = touchStartX;
+  isSwipingCard = false;
+}, { passive: true });
+
+cardsGrid.addEventListener('touchmove', e => {
+  if (state.viewMode !== 'single' || state.filteredList.length <= 1) return;
+  const touch = e.touches.item(0);
+  if (!touch) return;
+  const dx = touch.clientX - touchStartX;
+  const dy = touch.clientY - touchStartY;
+
+  if (!isSwipingCard && Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+    isSwipingCard = true;
+  }
+
+  if (isSwipingCard) {
+    touchCurrentX = touch.clientX;
+    const card = cardsGrid.querySelector('.acupoint-card');
+    if (card) {
+      card.classList.add('is-swiping');
+      const clampedDx = Math.max(-110, Math.min(110, dx * 0.45));
+      const rotateDeg = clampedDx * 0.04;
+      card.style.transform = 'translateX(' + clampedDx + 'px) rotate(' + rotateDeg + 'deg)';
+    }
+  }
+}, { passive: true });
+
+cardsGrid.addEventListener('touchend', () => {
+  if (!isSwipingCard) return;
+  const dx = touchCurrentX - touchStartX;
+  const card = cardsGrid.querySelector('.acupoint-card');
+  if (card) {
+    card.classList.remove('is-swiping');
+    card.style.transform = '';
+  }
+
+  const threshold = 55;
+  if (dx <= -threshold && state.currentIndex < state.filteredList.length - 1) {
+    state.currentIndex++;
+    renderCards();
+  } else if (dx >= threshold && state.currentIndex > 0) {
+    state.currentIndex--;
+    renderCards();
+  }
+  isSwipingCard = false;
+});
+
+// 2. ボタン・チップの波紋（リップル）エフェクト
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.filter-chip, .reset-all-btn, .single-nav-btn, .red-sheet-toggle, .view-tab-btn');
+  if (!btn || btn.disabled) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const wave = document.createElement('span');
+  wave.className = 'ripple-wave';
+  wave.style.width = size + 'px';
+  wave.style.height = size + 'px';
+  wave.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  wave.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  btn.appendChild(wave);
+  setTimeout(() => wave.remove(), 600);
+});
+
+// 3. リセット時の「元に戻す（Undo）」トースト通知
+let savedFilterSnapshot = null;
+let undoToastTimer = null;
+
+resetAllBtn.addEventListener('click', () => {
+  if (!savedFilterSnapshot) return;
+  clearTimeout(undoToastTimer);
+  undoToast.classList.add('is-visible');
+  undoToastTimer = setTimeout(() => {
+    undoToast.classList.remove('is-visible');
+    savedFilterSnapshot = null;
+  }, 5500);
+});
+
+resetAllBtn.addEventListener('pointerdown', () => {
+  const hasAnyFilter = state.keyword !== '' || state.meridian !== '' || state.selectedTags.size > 0;
+  if (hasAnyFilter) {
+    savedFilterSnapshot = {
+      keyword: state.keyword,
+      meridian: state.meridian,
+      tags: Array.from(state.selectedTags)
+    };
+  } else {
+    savedFilterSnapshot = null;
+  }
+});
+
+undoResetBtn.addEventListener('click', () => {
+  if (!savedFilterSnapshot) return;
+  clearTimeout(undoToastTimer);
+  undoToast.classList.remove('is-visible');
+
+  state.keyword = savedFilterSnapshot.keyword;
+  keywordInput.value = state.keyword;
+  clearSearchBtn.style.display = state.keyword ? 'block' : 'none';
+
+  state.meridian = savedFilterSnapshot.meridian;
+  meridianSelect.value = state.meridian;
+
+  state.selectedTags = new Set(savedFilterSnapshot.tags);
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.classList.toggle('is-selected', state.selectedTags.has(chip.dataset.tag));
+  });
+
+  savedFilterSnapshot = null;
+  filterAcupoints();
+});
+// --- [ブロック名：スワイプ・進捗バー・リップル＆Undo処理JS] ここまで ---
+    
 // === [新規機能追加エリア：JS] 新しいスクリプトはこの真上に貼り付け ===
 
 document.addEventListener('DOMContentLoaded', filterAcupoints);
